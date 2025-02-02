@@ -1,0 +1,38 @@
+[project]
+name = "mongoquery"
+version = "1.4.2"
+description = """\
+A utility library that provides a MongoDB-like query \
+language for querying python collections. It's mainly \
+intended to parse objects structured as fundamental types in \
+a similar fashion to what is produced by JSON or YAML \
+parsers.\
+"""
+readme = "README.rst"
+authors = [{ name = "Olivier Carrere", email = "olivier.carrere@gmail.com" }]
+requires-python = ">=3.9,<4"
+classifiers=[
+    "Programming Language :: Python",
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Utilities"
+]
+keywords=["mongodb", "query", "match"]
+license-files = ["LICENSE"]
+
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "ruff",
+    "pyright",
+    "pytest",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pyright]
+include = ["mongoquery"]
