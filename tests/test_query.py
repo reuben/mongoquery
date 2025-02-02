@@ -309,3 +309,52 @@ class TestQuery(TestCase):
         collection = [{"a": "5"}, {"a": "567"}]
         self.assertEqual([], self._query({"a": 5}, collection))
         self.assertEqual([{"a": "5"}], self._query({"a": "5"}, collection))
+
+    def test_expr_logical(self):
+        collection = [
+            {"id": "000", "a": "1"},
+            {"id": "000", "a": "2"},
+            {"id": "001", "a": "1"},
+            {"id": "001", "a": "2"},
+        ]
+        # eq
+        self.assertEqual(
+            collection[:2],
+            self._query({"$expr": {"$eq": ["$id", "000"]}}, collection),
+        )
+        # $gt
+        self.assertEqual(
+            collection[2:],
+            self._query({"$expr": {"$gt": ["$id", "000"]}}, collection),
+        )
+        # $lt
+        self.assertEqual(
+            collection[:2],
+            self._query({"$expr": {"$lt": ["$id", "001"]}}, collection),
+        )
+
+    def test_expr_concat(self):
+        collection = [
+            {"id": "000", "a": "1"},
+            {"id": "000", "a": "2"},
+            {"id": "001", "a": "1"},
+            {"id": "001", "a": "2"},
+        ]
+        self.assertEqual(
+            collection[1:],
+            self._query(
+                {"$expr": {"$gt": [{"$concat": ["$id", "__", "$a"]}, "000__1"]}},
+                collection,
+            ),
+        )
+        self.assertEqual(
+            collection[1:3],
+            self._query(
+                {
+                    "$expr": {
+                        "$in": [{"$concat": ["$id", "__", "$a"]}, ["000__2", "001__1"]]
+                    }
+                },
+                collection,
+            ),
+        )

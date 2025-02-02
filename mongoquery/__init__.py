@@ -342,3 +342,69 @@ class Query(object):
     ####################
 
     _comment = _noop
+
+    ####################
+    # $expr
+    ####################
+
+    def _expr_concat(self, condition, entry):
+        assert isinstance(condition, Sequence)
+        resolved = [
+            self._resolve_expr(sub_condition, entry) for sub_condition in condition
+        ]
+        if not all(isinstance(elem, str) for elem in resolved):
+            raise QueryError("$concat with non-string references")
+        return "".join(resolved)  # type: ignore
+
+    def _resolve_expr(self, condition, entry):
+        if isinstance(condition, Mapping):
+            assert len(condition) == 1
+            operator, condition = next(iter(condition.items()))
+            try:
+                return getattr(self, "_expr_" + operator[1:])(condition, entry)
+            except AttributeError:
+                raise QueryError(
+                    "{!r} operator in $expr isn't supported".format(operator)
+                )
+        elif is_non_string_sequence(condition):
+            return [
+                self._resolve_expr(sub_condition, entry) for sub_condition in condition
+            ]
+        elif isinstance(condition, str) and condition.startswith("$"):
+            return self._extract(entry, condition[1:].split("."))
+        return condition
+
+    def _process_expr_condition(self, operator, condition, entry):
+        assert operator.startswith("$")
+        assert isinstance(condition, Sequence)
+
+        # Mappings to query operators
+        QUERY_OPS = {
+            "$eq": self._eq,
+            "$gt": self._gt,
+            "$gte": self._gte,
+            "$in": self._in,
+            "$lt": self._lt,
+            "$lte": self._lte,
+            "$ne": self._ne,
+            "$nin": self._nin,
+        }
+        if operator in QUERY_OPS:
+            assert len(condition) == 2
+            resolved = [
+                self._resolve_expr(sub_condition, entry) for sub_condition in condition
+            ]
+            result = QUERY_OPS[operator](resolved[1], resolved[0])
+            return result
+
+        try:
+            return getattr(self, "_expr_" + operator[1:])(condition, entry)
+        except AttributeError:
+            raise QueryError("{!r} operator in $expr isn't supported".format(operator))
+
+    def _expr(self, condition, entry):
+        assert isinstance(condition, Mapping)
+        return all(
+            self._process_expr_condition(sub_operator, sub_condition, entry)
+            for sub_operator, sub_condition in condition.items()
+        )
