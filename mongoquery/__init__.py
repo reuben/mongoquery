@@ -14,7 +14,6 @@ class QueryError(Exception):
 
 
 class _Undefined(object):
-    # pylint: disable=too-few-public-methods
     pass
 
 
@@ -26,7 +25,6 @@ def is_non_string_sequence(entry):
 class Query(object):
     """The Query class is used to match an object against a MongoDB-like query"""
 
-    # pylint: disable=too-few-public-methods
     def __init__(self, definition):
         self._definition = definition
 
@@ -34,7 +32,7 @@ class Query(object):
         """Matches the entry object against the query specified on instanciation"""
         return self._match(self._definition, entry)
 
-    def _match(self, condition, entry):
+    def _match(self, condition, entry) -> bool:
         if isinstance(condition, Mapping):
             return all(
                 self._process_condition(sub_operator, sub_condition, entry)
@@ -210,7 +208,7 @@ class Query(object):
     def _type(condition, entry):
         # TODO: further validation to ensure the right type
         # rather than just checking
-        bson_type = {
+        bson_type: dict[int, type] = {
             1: float,
             2: str,
             3: Mapping,
@@ -261,7 +259,7 @@ class Query(object):
                 "$type has been used with unknown type {!r}".format(condition)
             )
 
-        return isinstance(entry, bson_type.get(condition))
+        return isinstance(entry, bson_type[condition])
 
     _exists = _noop
 
@@ -317,7 +315,6 @@ class Query(object):
         return all(self._match(item, entry) for item in condition)
 
     def _elemMatch(self, condition, entry):
-        # pylint: disable=invalid-name
         if not isinstance(entry, Sequence):
             return False
         return any(
