@@ -1,6 +1,6 @@
 [project]
-name = "mongoquery"
-version = "1.4.2"
+name = "mongo-query-match"
+version = "2.0.0"
 description = """\
 A utility library that provides a MongoDB-like query \
 language for querying python collections. It's mainly \
@@ -9,13 +9,15 @@ a similar fashion to what is produced by JSON or YAML \
 parsers.\
 """
 readme = "README.rst"
-authors = [{ name = "Olivier Carrere", email = "olivier.carrere@gmail.com" }]
+authors = [
+    { name = "Olivier Carrere", email = "olivier.carrere@gmail.com" },
+    { name = "Reuben Morais", email = "reuben.morais@gmail.com"}
+]
 requires-python = ">=3.9,<4"
 classifiers=[
     "Programming Language :: Python",
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Utilities"
 ]
 keywords=["mongodb", "query", "match"]
@@ -33,6 +35,9 @@ dev = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["mongoquery"]
 
 [tool.pyright]
 include = ["mongoquery"]
